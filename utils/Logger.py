@@ -1,5 +1,6 @@
 import logging
 
+
 def get_logger(file_name, data_name):
     logger = logging.getLogger(file_name)
     logger.setLevel(logging.INFO)
