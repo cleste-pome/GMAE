@@ -34,20 +34,88 @@ python clustering.py
 python classification.py
 ```
 
-### 2.1 Dataset Preprocessing
+## 2. Main Code
+
+### 2.1 Paths and Device Configuration
+
+This section defines the paths for saving logs, images, and the dataset, along with the device configuration for training.
+
+```py
+# Path to save logs
+parser.add_argument('--logs_path', default='1.logs_classification', type=str, help='Path to save logs')
+# Path to save images
+parser.add_argument('--imgs_path', default='2.imgs_classification', type=str, help='Path to save imgs')
+# Dataset folder path
+parser.add_argument('--folder_path', default='dataset', type=str, help='Dataset folder path')
+# Whether to plot the results during training
+parser.add_argument('--do_plot', default=True, type=bool, help='Whether to plot the results')
+# Device to use for training (e.g., GPU or CPU)
+parser.add_argument('--device', default='cuda:0', type=str, help='Device to use for training')
+```
+
+### 2.1 Hyperparameters
+
+This section defines hyperparameters related to the training process, such as the number of epochs, learning rate, and other essential parameters.
+
+```py
+# Number of training epochs
+parser.add_argument('--train_epoch', default=500, type=int, help='Number of training epochs')  # 500 epochs
+# Interval for evaluation
+parser.add_argument('--eval_interval', default=10, type=int, help='Interval for evaluation')
+# Random seed for reproducibility
+parser.add_argument('--seed', default=42, type=int, help='Random seed for initialization')
+# Learning rate for optimizer
+parser.add_argument('--lr', default=0.001, type=float, help='Learning rate for optimizer')
+# Feature dimensions
+parser.add_argument('--feature_dim', default=128, type=int, help='Feature dimensions')
+# Regularization for mutual alignment loss
+parser.add_argument('--lambda_ma', default=0.01, type=float, help='Lambda for mutual alignment loss')
+# Regularization for contrastive loss
+parser.add_argument('--lambda_con', default=0.01, type=float, help='Lambda for contrastive loss')
+# Number of positive samples for training
+parser.add_argument('--pos_num', default=21, type=int, help='Positive sample number')
+# Whether to use contrastive loss
+parser.add_argument('--do_contrast', default=True, type=bool, help='Whether to use contrastive loss')
+```
+
+### 2.3 Dataset Preprocessing
 
 The dataset preprocessing implements the following functions: misaligned views, random views with missing values, and random views with noise.
 
 ```py
-missing_ratio = 0.5
-dataset.addMissing(index, missing_ratio)  # Select samples based on the missing ratio, then randomly select (1 to view-1) views to perform the missing data process (set all data to zero).
-ratio_conflict = 0.4
-dataset.addConflict(index, conflict_ratio)  # Select samples based on the conflict ratio, then randomly replace the data of one view with the same view data from a sample of another category.
-ratio_noise = 0.1
-sigma = 0.5  # 'sigma': the standard deviation of the noise
-dataset.addNoise(index, noise_ratio, sigma)  # Select samples based on the noise ratio, then randomly select (1 to view-1) views to add Gaussian noise.
+# Select samples based on the noise ratio, then randomly select (1 to view-1) views to add Gaussian noise.
+parser.add_argument('--ratio_noise', default=0.0, type=float, help='Noise ratio')
+# Select samples based on the conflict ratio, then randomly replace the data of one view with the same view data from a sample of another category.
+parser.add_argument('--ratio_conflict', default=0.0, type=float, help='Conflict ratio')
+# Select samples based on the missing ratio, then randomly select (1 to view-1) views to perform the missing data process (set all data to zero).
+parser.add_argument('--missing_ratio', default=0.0, type=float, help='Missing ratio')
 ```
 
-### 2.2 Evaluation Metrics
+## 4. Metrics
 
-The evaluation metrics derived from the test outputs for each dataset are meticulously stored in respective files within the logs directory. Concurrently, comprehensive dataset metadata, including pertinent details, is systematically logged and preserved in logs/datasetInfo.csv, ensuring a thorough archival and easy retrieval process.
+The evaluation metrics derived from the test outputs for each dataset are meticulously stored in respective files within the logs directory. Concurrently, comprehensive dataset metadata, including pertinent details, is systematically logged and preserved in 1.logs/datasetInfo.csv, ensuring an easy archival and retrieval process.
+
+```py
+# TODO 1.计算准确率 (ACC)
+acc_cluster = cluster_accuracy(Y_ndarray, Y_pre)
+# print("\n1.[ACC_cluster.py]:{:.5f}".format(acc_cluster))
+
+# TODO 2.计算归一化互信息 (NMI)
+nmi_cluster = cluster_nmi(Y_ndarray, Y_pre)
+# print("2.[NMI_cluster.py]:{:.5f}".format(nmi_cluster))
+
+# TODO 3.计算调整兰德指数 (ARI)
+ari_cluster = cluster_ari(Y_ndarray, Y_pre)
+# print("3.[ARI_cluster.py]:{:.5f}".format(ari_cluster))
+
+# TODO 4.计算纯度 (Purity)
+pur_cluster = cluster_purity(Y_ndarray, Y_pre)
+# print("4.[PUR_cluster.py]:{:.5f}".format(pur_cluster))
+
+# TODO 5. 计算F分数(Fscore)
+fscore_cluster = cluster_Fscore(Y_ndarray, Y_pre)
+# print("5.[Fscore_cluster.py]:{:.5f}".format(fscore_cluster))
+
+# TODO 6. 计算召回率Recall
+recall_cluster = cluster_recall(Y_ndarray, Y_pre)
+```
