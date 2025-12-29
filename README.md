@@ -38,7 +38,7 @@ python classification.py
 
 ## 2. Main Code
 
-### 2.1 Paths and Device Configuration
+### 2.1 Configuration
 
 This section defines the paths for saving logs, images, and the dataset, along with the device configuration for training.
 
@@ -121,3 +121,19 @@ fscore_cluster = cluster_Fscore(Y_ndarray, Y_pre)
 # TODO 6. 计算召回率Recall
 recall_cluster = cluster_recall(Y_ndarray, Y_pre)
 ```
+
+## 4. Network
+
+The **Generalized Multi-view Autoencoder (GMAE)** is a model designed to process multi-view data, where each view represents a different perspective or modality of the data. The model consists of several key components: **Encoder**, **Decoder**, **Discriminator**, and the **GMAE Model** itself, which integrates these components to learn both shared and view-specific representations.
+
+(1) Encoder
+The **Encoder** maps the input data into a latent space using a series of fully connected layers. ReLU activations are applied to intermediate layers, and a dropout layer is used at the final layer to prevent overfitting. Each view has its own encoder that learns the view-specific representation.
+
+(2) Decoder
+The **Decoder** reconstructs the original input data from its latent representation. It follows a similar structure to the encoder, but the final layer uses a Sigmoid activation function to map the output to the appropriate range for reconstruction.
+
+(3) Discriminator
+The **Discriminator** is used in adversarial training to help distinguish between real and fake data. It takes the latent representations as input and outputs a probability indicating whether the data is real or fake, improving the quality of the learned representations.
+
+(4) GMAE Model
+The **GMAE Model** integrates all the components: it uses individual encoders and decoders for each view, while also maintaining a shared encoder for common features across all views. Discriminators are used for each view to guide the learning process. After obtaining the shared and view-specific representations, the model concatenates them and uses a classifier to make final predictions.
