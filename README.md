@@ -1,14 +1,37 @@
 # GMAE
 Source code of "Learning Disentangled Representations for Generalized Multi-view Clustering"
 
+GMAE-Github
+├── 1.logs_classification # 分类任务的日志与图像文件
+├── 2.imgs_classification 
+├── 1.logs_clustering # 聚类任务的日志与图像文件
+├── 2.imgs_clustering 
+├── dataset # 数据集存放目录
+├── utils # 辅助功能的工具包
+│ ├── dataloader.py # 数据集加载与预处理
+│ ├── Logger.py # log文档打印
+│ ├── metric.py # 评价指标计算
+│ ├── plot.py # 绘制评价指标表格和图像
+├── classification.py # 多视图分类主程序
+├── clustering.py # 多视图聚类主程序
+├── loss.py # 损失函数（部分）定义
+├── models.py # 模型定义
+└── external # 外部库
+
 ## 1. Dataset
 It can be got from: https://github.com/wangsiwei2010/awesome-multi-view-clustering
 
 ## 2. Run
-Run the main.py on handwritten dataset with the followding command:
+(1) To run the **multi-view clustering** task, use the following command:
 
 ```shell
-python main.py
+python clustering.py
+```
+
+(2) To run the **multi-view classification** task, use the following command:
+
+```shell
+python classification.py
 ```
 
 ### 2.1 Dataset Preprocessing
