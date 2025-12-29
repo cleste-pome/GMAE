@@ -88,6 +88,19 @@ class MvAEModel(nn.Module):
             d_sum += d
         # 创建共享编码器，输入为所有视角的拼接，输出为共享表示
         self.encoder_share = Encoder([d_sum] + h_dims + [out_dims])
+        # TODO 添加分类头
+        hidden_dim = out_dims * (view_num + 1)
+        mid = min(256, hidden_dim)
+        self.classifier = nn.Sequential(
+            nn.LayerNorm(hidden_dim),
+            nn.Dropout(0.2),
+            nn.Linear(hidden_dim, mid),
+            nn.GELU(),
+            nn.Dropout(0.2),
+            nn.Linear(mid, num_classes),
+        )
+        # LayerNorm
+        self.block_norm = nn.LayerNorm(out_dims)
 
     # 定义判别器损失的计算函数
     def discriminators_loss(self, hidden_specific, i, LAMB_DIS=1):
@@ -112,6 +125,9 @@ class MvAEModel(nn.Module):
             hidden_v = torch.cat((hidden_share, hidden_specific_v), dim=-1)  # 拼接共享表示和特定表示
             rec = self.decoders_specific[v](hidden_v)  # 通过特定解码器获取重构输出
             recs.append(rec)  # 将重构输出添加到列表
-        hidden_list = [hidden_share] + hidden_specific  # 创建包含共享和特定表示的列表
-        hidden = torch.cat(hidden_list, dim=-1)  # 拼接所有隐藏表示
+            
+        hidden_list = [self.block_norm(hidden_share)] + [self.block_norm(h) for h in hidden_specific] # 创建包含共享和特定表示的列表
+        hidden = torch.cat(hidden_list, dim=-1) # 拼接所有隐藏表示
+        class_output = self.classifier(hidden)
+            
         return hidden_share, hidden_specific, hidden, recs  # 返回共享表示、特定表示、拼接表示和重构输出
