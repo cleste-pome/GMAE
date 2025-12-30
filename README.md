@@ -93,7 +93,52 @@ parser.add_argument('--ratio_conflict', default=0.0, type=float, help='Conflict 
 parser.add_argument('--missing_ratio', default=0.0, type=float, help='Missing ratio')
 ```
 
-## 4. Metrics
+## 3. Loss
+
+
+
+```py
+# 1.loss_rec：重建损失，约束自编码器的特征提取
+loss_rec += mse_loss_fn(recs[v], x[v])
+
+# 2.loss_mi：正交损失函数，让共享潜在表示与每个视图的特定潜在表示之间的相关性最小化
+loss_mi += orthogonal_loss(hidden_share, hidden_specific[v])
+
+# 3.loss_ad：判别器损失函数
+loss_ad += model.discriminators_loss(hidden_specific, v)
+
+# 4.loss_con：对比损失
+loss_con = contrastive_loss(args, hidden, nbr_idx, neg_idx, train_idx)
+
+# [仅限多视图分类] 5.loss_class：交叉熵，针对分类头输出约束
+criterion = nn.CrossEntropyLoss()
+loss_class += criterion(classes, y)
+
+# Total loss 总损失
+total_loss = loss_rec + args.lambda_ma * (loss_mi + loss_ad) + args.lambda_con * loss_con + loss_class
+```
+
+More details, along with detailed comments in the code, can be found in **utils/metric.py**.
+
+## 4. Network
+
+The **Generalized Multi-view Autoencoder (GMAE)** is a model designed to process multi-view data, where each view represents a different perspective or modality of the data. The model consists of several key components: **Encoder**, **Decoder**, **Discriminator**, and the **GMAE Model** itself, which integrates these components to learn both shared and view-specific representations.
+
+(1) Encoder
+The **Encoder** maps the input data into a latent space using a series of fully connected layers. ReLU activations are applied to intermediate layers, and a dropout layer is used at the final layer to prevent overfitting. Each view has its own encoder that learns the view-specific representation.
+
+(2) Decoder
+The **Decoder** reconstructs the original input data from its latent representation. It follows a similar structure to the encoder, but the final layer uses a Sigmoid activation function to map the output to the appropriate range for reconstruction.
+
+(3) Discriminator
+The **Discriminator** is used in adversarial training to help distinguish between real and fake data. It takes the latent representations as input and outputs a probability indicating whether the data is real or fake, improving the quality of the learned representations.
+
+(4) GMAE Model
+The **GMAE Model** integrates all the components: it uses individual encoders and decoders for each view, while also maintaining a shared encoder for common features across all views. Discriminators are used for each view to guide the learning process. After obtaining the shared and view-specific representations, the model concatenates them and uses a classifier to make final predictions.
+
+More details, along with detailed comments in the code, can be found in **models.py**.
+
+## 5. Metrics
 
 The evaluation metrics derived from the test outputs for each dataset are meticulously stored in respective files within the logs directory. Concurrently, comprehensive dataset metadata, including pertinent details, is systematically logged and preserved in 1.logs/datasetInfo.csv, ensuring an easy archival and retrieval process. In our paper, the following four metrics were selected for evaluation: accuracy (ACC), normalized mutual information (NMI), adjusted Rand index (ARI), and purity (Purity).
 
@@ -124,25 +169,7 @@ recall_cluster = cluster_recall(Y_ndarray, Y_pre)
 
 More details, along with detailed comments in the code, can be found in **utils/metric.py**.
 
-## 4. Network
-
-The **Generalized Multi-view Autoencoder (GMAE)** is a model designed to process multi-view data, where each view represents a different perspective or modality of the data. The model consists of several key components: **Encoder**, **Decoder**, **Discriminator**, and the **GMAE Model** itself, which integrates these components to learn both shared and view-specific representations.
-
-(1) Encoder
-The **Encoder** maps the input data into a latent space using a series of fully connected layers. ReLU activations are applied to intermediate layers, and a dropout layer is used at the final layer to prevent overfitting. Each view has its own encoder that learns the view-specific representation.
-
-(2) Decoder
-The **Decoder** reconstructs the original input data from its latent representation. It follows a similar structure to the encoder, but the final layer uses a Sigmoid activation function to map the output to the appropriate range for reconstruction.
-
-(3) Discriminator
-The **Discriminator** is used in adversarial training to help distinguish between real and fake data. It takes the latent representations as input and outputs a probability indicating whether the data is real or fake, improving the quality of the learned representations.
-
-(4) GMAE Model
-The **GMAE Model** integrates all the components: it uses individual encoders and decoders for each view, while also maintaining a shared encoder for common features across all views. Discriminators are used for each view to guide the learning process. After obtaining the shared and view-specific representations, the model concatenates them and uses a classifier to make final predictions.
-
-More details, along with detailed comments in the code, can be found in **models.py**.
-
-## 5. 💻User Guide
+## 6. 💻User Guide
 
 All experiments were conducted using Python 3.8.15 and PyTorch 1.13.1+cu116 on a Windows PC equipped with an AMD Ryzen 9 5900HX CPU, 32GB RAM, and an Nvidia RTX 3080 GPU (16GB). 
 
