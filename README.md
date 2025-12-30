@@ -118,7 +118,7 @@ loss_class += criterion(classes, y)
 total_loss = loss_rec + args.lambda_ma * (loss_mi + loss_ad) + args.lambda_con * loss_con + loss_class
 ```
 
-More details, along with detailed comments in the code, can be found in **utils/metric.py**.
+More details, along with detailed comments in the code, can be found in **loss.py**.
 
 ## 4. Network
 
