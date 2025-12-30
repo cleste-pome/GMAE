@@ -5,20 +5,22 @@ def contrastive_loss(args, hidden, nbr_idx, neg_idx, idx):
     if not args.do_contrast:
         return 0
     loss_con = 0
-    # 遍历每个样本，计算正负样本对的对比损失
+    # 遍历计算正负样本对的对比损失
     for i in range(len(idx)):
-        # 获取正样本表示，nbr_idx[i]是正样本的索引
-        hidden_positive = hidden[nbr_idx[i]]
-        # 计算正样本和当前样本的余弦相似度，并取其指数值
-        positive = torch.exp(torch.cosine_similarity(hidden[i].unsqueeze(0), hidden_positive.detach()))
-        # 获取负样本表示，neg_idx[i]是负样本的索引
-        hidden_negative = hidden[neg_idx[i]]
-        # 计算负样本和当前样本的余弦相似度，并取其指数值
-        negative = torch.exp(torch.cosine_similarity(hidden[i].unsqueeze(0), hidden_negative.detach())).sum()
-        # 计算对比损失：对比正样本和负样本的相似度，最大化正样本与负样本的差异
-        loss_con -= torch.log((positive / negative)).sum()
-        # 清除 GPU 缓存，避免内存溢出
-        torch.cuda.empty_cache()
+        index = idx[i]
+        if int(index) < len(idx) - 1:
+            # 获取正样本表示
+            hidden_positive = hidden[nbr_idx[index]]
+            # 计算正样本和当前样本的余弦相似度，并取其指数值
+            positive = torch.exp(torch.cosine_similarity(hidden[i].unsqueeze(0), hidden_positive.detach()))
+            # 获取负样本表示
+            hidden_negative = hidden[neg_idx[index]]
+            # 计算负样本和当前样本的余弦相似度，并取其指数值
+            negative = torch.exp(torch.cosine_similarity(hidden[i].unsqueeze(0), hidden_negative.detach())).sum()
+            # 计算对比损失：对比正样本和负样本的相似度，最大化正样本与负样本的差异
+            loss_con -= torch.log((positive / negative)).sum()
+            # 清除 GPU 缓存，避免内存溢出
+            torch.cuda.empty_cache()
     # 返回平均对比损失（取决于样本数量 idx 的长度）
     return loss_con / len(idx)
 

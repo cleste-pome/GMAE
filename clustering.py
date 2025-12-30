@@ -17,9 +17,6 @@ from utils.metric import compute_metric
 from utils.plot import plot_metric
 
 
-# =======================================================================
-# 设置随机种子，保证实验可复现
-# =======================================================================
 def seed_setting(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -53,10 +50,9 @@ def prepare_neighbors(dataset, ins_num, view_num):
     return nbr_idx, neg_idx
 
 
-def train_one_epoch(args, model, mse_loss_fn, optimizer, dataset, ins_num, view_num, nbr_idx, neg_idx, device):
-    train_loader = DataLoader(dataset, batch_size=ins_num, shuffle=False)
+def train_one_epoch(args, model, mse_loss_fn, optimizer, dataset, ins_num, view_num, nbr_idx, neg_idx, epoch, device):
+    train_loader = DataLoader(dataset, batch_size=ins_num, shuffle=True)
 
-    epoch_loss = 0.0
     for x, y, idx, pu in train_loader:
         optimizer.zero_grad()
         model.train()
@@ -76,8 +72,6 @@ def train_one_epoch(args, model, mse_loss_fn, optimizer, dataset, ins_num, view_
         total_loss = loss_rec + args.lambda_ma * (loss_mi + loss_ad) + args.lambda_con * loss_con
         total_loss.backward()
         optimizer.step()
-        epoch_loss += total_loss.item()
-    print(f'\nTotal loss [Clustering]: {epoch_loss}')
 
 
 def evaluate_model(model, dataset, nc, ins_num, view_num, device):
@@ -95,9 +89,6 @@ def evaluate_model(model, dataset, nc, ins_num, view_num, device):
             return ACC, NMI, Purity, ARI, F_score, Precision, Recall
 
 
-# =======================================================================
-# 主程序
-# =======================================================================
 if __name__ == '__main__':
     # ===================================================================
     # 使用argparse解析命令行超参数
@@ -109,7 +100,7 @@ if __name__ == '__main__':
     parser.add_argument('--do_plot', default=True, type=bool, help='Whether to plot the results')
     parser.add_argument('--device', default='cuda:0', type=str, help='Device to use for training')
     # TODO 1.超参数
-    parser.add_argument('--train_epoch', default=500, type=int, help='Number of training epochs')
+    parser.add_argument('--train_epoch', default=500, type=int, help='Number of training epochs') # 500
     parser.add_argument('--eval_interval', default=10, type=int, help='Interval for evaluation')
     parser.add_argument('--seed', default=42, type=int, help='Random seed')
     parser.add_argument('--lr', default=0.001, type=float, help='Learning rate')
@@ -161,7 +152,8 @@ if __name__ == '__main__':
             acc_list, nmi_list, pur_list, ari_list = [], [], [], []
 
             for epoch in tqdm(range(args.train_epoch)):
-                train_one_epoch(args, model, mse_loss_fn, optimizer, dataset, ins_num, view_num, nbr_idx, neg_idx, args.device)
+                train_one_epoch(args, model, mse_loss_fn, optimizer, dataset, ins_num, view_num, nbr_idx, neg_idx,
+                                epoch, args.device)
 
                 # 每隔 `eval_interval` 轮测试一次
                 if (epoch + 1) % args.eval_interval == 0:

@@ -72,7 +72,7 @@ if __name__ == '__main__':
     parser.add_argument('--do_plot', default=True, type=bool, help='Whether to plot the results')
     parser.add_argument('--device', default='cuda:0', type=str, help='Device to use for training')
     # TODO 1.超参数
-    parser.add_argument('--train_epoch', default=500, type=int, help='Number of training epochs')
+    parser.add_argument('--train_epoch', default=500, type=int, help='Number of training epochs') # 500
     parser.add_argument('--eval_interval', default=10, type=int, help='Interval for evaluation')
     parser.add_argument('--seed', default=42, type=int, help='Random seed')
     parser.add_argument('--lr', default=0.001, type=float, help='Learning rate')
