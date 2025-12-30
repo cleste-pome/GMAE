@@ -14,7 +14,7 @@ from models import GMAE
 from utils import Logger
 from utils.dataloader import dataset_with_info
 from utils.metric import compute_metric
-from utils.plot import plot_acc, print_metrics_table
+from utils.plot import plot_metric, print_metrics_table
 
 
 # =======================================================================
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     parser.add_argument('--do_plot', default=True, type=bool, help='Whether to plot the results')
     parser.add_argument('--device', default='cuda:0', type=str, help='Device to use for training')
     # TODO 1.超参数
-    parser.add_argument('--train_epoch', default=500, type=int, help='Number of training epochs') # 500
+    parser.add_argument('--train_epoch', default=500, type=int, help='Number of training epochs')
     parser.add_argument('--eval_interval', default=10, type=int, help='Interval for evaluation')
     parser.add_argument('--seed', default=42, type=int, help='Random seed')
     parser.add_argument('--lr', default=0.001, type=float, help='Learning rate')
@@ -266,10 +266,10 @@ if __name__ == '__main__':
             # 绘图
             # ===================================================================
             if args.do_plot:
-                plot_acc(acc_list, dataset_name, 'acc', args.imgs_path)
-                plot_acc(nmi_list, dataset_name, 'nmi', args.imgs_path)
-                plot_acc(pur_list, dataset_name, 'pur', args.imgs_path)
-                plot_acc(ari_list, dataset_name, 'ari', args.imgs_path)
+                plot_metric(acc_list, dataset_name, 'acc', args.imgs_path)
+                plot_metric(nmi_list, dataset_name, 'nmi', args.imgs_path)
+                plot_metric(pur_list, dataset_name, 'pur', args.imgs_path)
+                plot_metric(ari_list, dataset_name, 'ari', args.imgs_path)
 
         else:
             print(f'Non-MAT file. Please convert the dataset to multi-view one-dimensional MAT format.')
